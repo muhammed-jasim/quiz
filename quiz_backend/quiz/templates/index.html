@@ -1,0 +1,155 @@
+<!-- index.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/index.css' %}">
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      var totalQuestions = {{ questions|length }};
+      var currentIndex = 1;
+      var userAnswers = {};
+      var answeredQuestions = 0; 
+      var timerInterval;
+
+      function showQuestion(questionIndex) {
+          for (var i = 1; i <= totalQuestions; i++) {
+              var question = document.getElementById('question' + i);
+              if (question) {
+                  question.style.display = i === questionIndex ? 'block' : 'none';
+              }
+          }
+
+          // Reset timer for the new question
+          startTimer(30, 'timer' + currentIndex);
+      }
+
+      function startTimer(duration, display) {
+          var timer = duration, minutes, seconds;
+          clearInterval(timerInterval);
+
+          timerInterval = setInterval(function () {
+              minutes = parseInt(timer / 60, 10);
+              seconds = parseInt(timer % 60, 10);
+
+              minutes = minutes < 10 ? "0" + minutes : minutes;
+              seconds = seconds < 10 ? "0" + seconds : seconds;
+
+              document.getElementById(display).textContent = minutes + ":" + seconds;
+
+              if (--timer < 0) {
+                  clearInterval(timerInterval); // Stop the timer
+                  timer = duration;
+                  showNextQuestion(); 
+              }
+          }, 1000);
+      }
+
+      document.body.addEventListener('click', function (event) {
+          var target = event.target;
+          if (target.tagName === 'BUTTON' && target.classList.contains('submit-answer')) {
+              var questionIndex = target.getAttribute('data-question-index');
+              var correctAnswer = target.getAttribute('data-correct-answer');
+              checkAnswer(questionIndex, correctAnswer);
+          }
+      });
+
+      function checkAnswer(questionIndex, correctAnswer) {
+          var resultElement = document.getElementById('result' + questionIndex);
+          var selectedOption = document.querySelector('input[name="option' + questionIndex + '"]:checked');
+
+          if (selectedOption) {
+              var userAnswer = selectedOption.value;
+              userAnswers[questionIndex] = userAnswer;
+              answeredQuestions++;
+
+              if (userAnswer === correctAnswer) {
+                  resultElement.textContent = 'Correct! Your answer is correct.';
+              } else {
+                  resultElement.textContent = 'Wrong answer. The correct answer is ' + correctAnswer;
+              }
+
+              
+              setTimeout(function () {
+                  resultElement.textContent = '';
+                  showNextQuestion();
+              }, 3000); 
+
+             
+              clearInterval(timerInterval);
+
+             
+              if (answeredQuestions === totalQuestions) {
+                  showMarksheet();
+              }
+          } else {
+              alert('Please select an option before submitting.');
+          }
+      }
+
+      function showNextQuestion() {
+          currentIndex = (currentIndex % totalQuestions) + 1;
+          showQuestion(currentIndex);
+      }
+
+      function showMarksheet() {
+        
+          alert('You have completed the quiz!');
+      }
+
+      showQuestion(currentIndex);
+  });
+</script>
+<div class="main-div">
+    <div class="contents">
+        <div class="heading">
+            <h2>Sports Test</h2>
+            <h4>Choose your answer from the option below you can't change the answer once selected</h4>
+        </div>
+
+        {% for question in questions %}
+        <div class="question" id="question{{ forloop.counter }}" style="display: none">
+        <p class="question-no">No of Questions: {{ forloop.counter }}</p>
+        <p class="question-name">{{ question.question_text }}   ?</p>
+        <div class="options-div">
+            <label>
+                <input type="radio" name="option{{ forloop.counter }}" value="A" /> Option
+                A: {{ question.option_a }}
+            </label>
+        </div>
+        <div class="options-div">
+            <label>
+                <input type="radio" name="option{{ forloop.counter }}" value="B" /> Option
+                B: {{ question.option_b }}
+            </label>
+        </div>
+        <div class="options-div">
+            <label>
+                <input type="radio" name="option{{ forloop.counter }}" value="C" /> Option
+                C: {{ question.option_c }}
+            </label>
+        </div>
+        <div class="options-div">
+            <label>
+                <input type="radio" name="option{{ forloop.counter }}" value="D" /> Option
+                D: {{ question.option_d }}
+            </label>
+        </div>
+
+        
+        <p id="result{{ forloop.counter }}" class="results"></p>
+        <p class="remain-time">Remaining Time: <span id="timer{{ forloop.counter }}">30</span> seconds</p>
+        <button
+        class="submit-answer"
+        data-question-index="{{ forloop.counter }}"
+        data-correct-answer="{{ question.correct_answer }}"
+    >
+        Submit
+    </button>
+
+        </div>
+
+        {% endfor %}
+    </div>
+    <div class="photo-div">
+        <img src="{% static 'images/question-img.png' %}" alt="">
+    </div>
+</div>
