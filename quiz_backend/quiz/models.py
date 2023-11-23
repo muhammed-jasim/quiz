@@ -4,7 +4,7 @@ from django.db import models
 
 class Question(models.Model):
     question_text = models.CharField(max_length=255 ,default='')
-    option_a = models.CharField(max_length=255, default='')  # You can specify any default value here
+    option_a = models.CharField(max_length=255, default='')  
     option_b = models.CharField(max_length=255,default='')
     option_c = models.CharField(max_length=255,default='')
     option_d = models.CharField(max_length=255,default='')
